@@ -4,6 +4,7 @@ import { Registry, collectDefaultMetrics } from 'prom-client';
 import logger from './logger.js';
 
 const register = new Registry();
+
 collectDefaultMetrics({ register });
 
 const app = express();
@@ -21,8 +22,8 @@ app.get('/metrics', (req, res) => {
     });
 });
 
-export const startMetricsServer = (port: number, host = '127.0.0.1') => {
+export const startMetricsServer = (port: number = 4101, host = '127.0.0.1') => {
   return app.listen(port, host, () => {
-    logger.info(`Metrics server is listening on ${host}:${port}`);
+    logger.info(`Metrics server listening on http://${host}:${port}`);
   });
 };

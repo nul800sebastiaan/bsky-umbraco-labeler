@@ -1,83 +1,93 @@
-import { ComAtprotoLabelDefs } from '@atcute/client/lexicons';
-import { LabelerServer } from '@skyware/labeler';
+import { ComAtprotoLabelDefs } from '@atproto/api';
+import { LabelerOptions, LabelerServer, ProcedureHandler } from '@skyware/labeler';
 
-import { DID, SIGNING_KEY } from './config.js';
+import logger from './logger.js';
+import { Account } from './types.js';
 
-// import { LABELS } from './constants.js';
-// import logger from './logger.js';
+export const startLabelerServer = (options: LabelerOptions, port: number = 4100, host = '127.0.0.1') => {
+  const labelerServer = new LabelerServer(options);
 
-export const labelerServer = new LabelerServer({ did: DID, signingKey: SIGNING_KEY });
+  async function fetchGithubJson<T>(url: string): Promise<T> {
+    let headers = new Headers({
+      Accept: 'application/vnd.github.v3.raw',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.82 Safari/537.36 Edg/99.0.1150.36',
+      'Cache-Control': 'nocache',
+    });
 
-// export const label = (did: string, rkey: string) => {
-//   logger.info(`Received rkey: ${rkey} for ${did}`);
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: headers,
+    });
 
-//   if (rkey === 'self') {
-//     logger.info(`${did} liked the labeler. Returning.`);
-//     return;
-//   }
-//   try {
-//     const labels = fetchCurrentLabels(did);
-//     addOrUpdateLabel(did, rkey, labels);
-//   } catch (error) {
-//     logger.error(`Error in \`label\` function: ${error}`);
-//   }
-// };
+    if (!resp.ok) {
+      throw new Error(resp.statusText);
+    }
 
-// function fetchCurrentLabels(did: string) {
-//   const query = labelerServer.db
-//     .prepare<string[]>(`SELECT * FROM labels WHERE uri = ?`)
-//     .all(did) as ComAtprotoLabelDefs.Label[];
+    return resp.json() as T;
+  }
 
-//   const labels = query.reduce((set, label) => {
-//     if (!label.neg) set.add(label.val);
-//     else set.delete(label.val);
-//     return set;
-//   }, new Set<string>());
+  const fetchCurrentActiveLabels = () => {
+    return labelerServer.db
+      .prepare<
+        string[]
+      >(`SELECT src, uri, val, MAX(CASE WHEN neg == true THEN 0 ELSE cts END) as cts FROM labels GROUP BY src, uri, val`)
+      .all() as ComAtprotoLabelDefs.Label[];
+  };
 
-//   if (labels.size > 0) {
-//     logger.info(`Current labels: ${Array.from(labels).join(', ')}`);
-//   }
+  const syncLabelsHandler: ProcedureHandler = async (req, res) => {
+    // Fetch JSON
+    const hqMembers = await fetchGithubJson<Account[]>(
+      'https://api.github.com/repos/mattbrailsford/bsky-umbraco-labeler/contents/data/umbraco-hq.json',
+    );
+    const mvpMembers = (
+      await fetchGithubJson<Account[]>(
+        'https://api.github.com/repos/mattbrailsford/bsky-umbraco-labeler/contents/data/umbraco-mvp.json',
+      )
+    ).filter((x) => !hqMembers.some((y) => y.did === x.did)); // HQ Members can't also be MVPs
 
-//   return labels;
-// }
+    // Get current labels
+    const currentLabels = fetchCurrentActiveLabels();
 
-// function deleteAllLabels(did: string, labels: Set<string>) {
-//   const labelsToDelete: string[] = Array.from(labels);
+    // Add labels
+    const newHqMembers = hqMembers.filter((x) => !currentLabels.some((y) => y.uri === x.did));
+    newHqMembers.forEach((x) => {
+      labelerServer.createLabel({ uri: x.did, val: 'umbraco-hq' });
+    });
 
-//   if (labelsToDelete.length === 0) {
-//     logger.info(`No labels to delete`);
-//   } else {
-//     logger.info(`Labels to delete: ${labelsToDelete.join(', ')}`);
-//     try {
-//       labelerServer.createLabels({ uri: did }, { negate: labelsToDelete });
-//       logger.info('Successfully deleted all labels');
-//     } catch (error) {
-//       logger.error(`Error deleting all labels: ${error}`);
-//     }
-//   }
-// }
+    const newMvpMembers = mvpMembers.filter((x) => !currentLabels.some((y) => y.uri === x.did));
+    newMvpMembers.forEach((x) => {
+      labelerServer.createLabel({ uri: x.did, val: 'umbraco-mvp' });
+    });
 
-// function addOrUpdateLabel(did: string, rkey: string, labels: Set<string>) {
-//   const newLabel = LABELS.find((label) => label.rkey === rkey);
-//   if (!newLabel) {
-//     logger.warn(`New label not found: ${rkey}. Likely liked a post that's not one for labels.`);
-//     return;
-//   }
-//   logger.info(`New label: ${newLabel.identifier}`);
+    // Delete labels
+    const delHqMembers = currentLabels.filter((x) => !hqMembers.some((y) => y.did === x.uri));
+    delHqMembers.forEach((x) => {
+      labelerServer.createLabel({ uri: x.uri, val: 'umbraco-hq', neg: true });
+    });
 
-//   if (labels.size >= 1) {
-//     try {
-//       labelerServer.createLabels({ uri: did }, { negate: Array.from(labels) });
-//       logger.info(`Successfully negated existing labels: ${Array.from(labels).join(', ')}`);
-//     } catch (error) {
-//       logger.error(`Error negating existing labels: ${error}`);
-//     }
-//   }
+    const delMvpMembers = currentLabels.filter((x) => !mvpMembers.some((y) => y.did === x.uri));
+    delMvpMembers.forEach((x) => {
+      labelerServer.createLabel({ uri: x.uri, val: 'umbraco-mvp', neg: true });
+    });
 
-//   try {
-//     labelerServer.createLabel({ uri: did, val: newLabel.identifier });
-//     logger.info(`Successfully labeled ${did} with ${newLabel.identifier}`);
-//   } catch (error) {
-//     logger.error(`Error adding new label: ${error}`);
-//   }
-// }
+    return res.send();
+  };
+
+  // We need to give the labeler service time to initialize as it
+  // runs a promise during construction but we need to wait for
+  // that promise to resolve before we can add our own endpoint
+  setTimeout(() => {
+    labelerServer.app.post('/sync-labels', syncLabelsHandler);
+
+    labelerServer.app.listen({ port, host }, (error, address) => {
+      if (error) {
+        logger.error('Error starting server: %s', error);
+      } else {
+        logger.info(`Labeler server listening on ${address}`);
+      }
+    });
+  }, 100);
+
+  return labelerServer;
+};

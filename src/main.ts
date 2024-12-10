@@ -1,17 +1,10 @@
-import { HOST, METRICS_PORT, PORT } from './config.js';
-import { labelerServer } from './label.js';
+import { DID, HOST, METRICS_PORT, PORT, SIGNING_KEY } from './config.js';
+import { startLabelerServer } from './label.js';
 import logger from './logger.js';
 import { startMetricsServer } from './metrics.js';
 
-const metricsServer = startMetricsServer(METRICS_PORT);
-
-labelerServer.app.listen({ port: PORT, host: HOST }, (error, address) => {
-  if (error) {
-    logger.error('Error starting server: %s', error);
-  } else {
-    logger.info(`Labeler server listening on ${address}`);
-  }
-});
+const metricsServer = startMetricsServer(METRICS_PORT, HOST);
+const labelerServer = startLabelerServer({ did: DID, signingKey: SIGNING_KEY }, PORT, HOST);
 
 function shutdown() {
   try {
