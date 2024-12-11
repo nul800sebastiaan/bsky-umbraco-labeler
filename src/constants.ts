@@ -1,4 +1,4 @@
-import { Account, Label } from './types.js';
+import { Label } from './types.js';
 
 export const LABELS: Label[] = [
   {
@@ -14,10 +14,3 @@ export const LABELS: Label[] = [
     ]
   }
 ];
-
-export const UMB_HQ_MEMBERS : Account[] = [
-  {
-    did: 'did:plc:2bbkkjbpadqmyysvdrxbvpai',
-    handle: 'mattbrailsford.dev'
-  }
-]
