@@ -12,7 +12,7 @@ export const startLabelerServer = (options: LabelerOptions, port: number = 4100,
   const fetchLabelAssignments = (label: string) => {
     // Fetch latest entries for a given label
     var labels = labelerServer.db
-      .prepare<string[]>(`SELECT src, uri, val, MAX(cts) as cts FROM labels GROUP BY src, uri, val WHERE val = ?`)
+      .prepare<string[]>(`SELECT src, uri, val, MAX(cts) as cts FROM labels WHERE val = ? GROUP BY src, uri, val`)
       .all(label) as ComAtprotoLabelDefs.Label[];
 
     // Return labels excluding negated
