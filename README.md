@@ -21,7 +21,7 @@ Each file contains a JSON array of objects with the following schema:
 }
 ```
 
-The `did` field is the `did` of your account. You can find your did by using the locator service at https://ilo.so/bluesky-did/. The `handle` field is for your full Bsky handle, ie `umbracolabeler.bsky.social`
+The `did` field is the `did` of your account. You can find your did by using the an online tool such as https://ilo.so/bluesky-did/. The `handle` field is for your full Bsky handle, ie `umbracolabeler.bsky.social`
 
 ## License
 
