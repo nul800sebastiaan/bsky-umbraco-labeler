@@ -2,7 +2,7 @@
 
 A [Bluesky labeler](https://docs.bsky.app/docs/advanced-guides/moderation) to highlight Umbraco HQ and MVP accounts
 
-<img src="assets/screenshot.png" alt="Example labels" width="400">
+<img src="assets/screenshot.png" alt="Example labels" width="400" style="margin-left: auto; margin-right: auto">
 
 ## Usage
 
