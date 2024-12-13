@@ -30,7 +30,7 @@
   "dependencies": {
     "@atproto/api": "^0.13.20",
     "@skyware/bot": "^0.3.8",
-    "@skyware/labeler": "^0.2.0",
+    "@skyware/labeler": "^0.1.13",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "husky": "^9.1.7",
