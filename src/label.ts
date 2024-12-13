@@ -12,7 +12,9 @@ export const startLabelerServer = (options: LabelerOptions, port: number = 4100,
   const fetchLabelAssignments = (label: string) => {
     // Fetch latest entries for a given label
     var labels = labelerServer.db
-      .prepare<string[]>(`SELECT src, uri, val, MAX(cts) as cts FROM labels WHERE val = ? GROUP BY src, uri, val`)
+      .prepare<
+        string[]
+      >(`SELECT * FROM labels as l1 WHERE l1.val = ? AND l1.id = (SELECT MAX(l2.id) FROM labels as l2 WHERE l1.src = l2.src AND l1.uri = l2.uri)`)
       .all(label) as ComAtprotoLabelDefs.Label[];
 
     // Return labels excluding negated
@@ -41,7 +43,7 @@ export const startLabelerServer = (options: LabelerOptions, port: number = 4100,
       // Add new members
       const newMembers = members.filter((x) => !labelAssignments.some((y) => y.uri === x.did));
       newMembers.forEach((x) => {
-        labelerServer.createLabel({ uri: x.did, val: label.identifier });
+        labelerServer.createLabel({ uri: x.did, val: label.identifier, neg: false });
         console.log(`Adding "${label.identifier}" label to ${x.did}`);
         result.added++;
       });
