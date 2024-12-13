@@ -6,7 +6,7 @@ A [Bluesky labeler](https://docs.bsky.app/docs/advanced-guides/moderation) to hi
 
 ## Ussage
 
-In Blusky search for the [umbracolabeler.bsky.app](https://bsky.app/profile/umbracolabeler.bsky.social) account and click on the **Subscribe to labeler** button. Now in your feed, all HQ and MVP accounts should now get a shiny new labels on their profiles and all of their posts to highglight their status.
+In Blusky search for the [umbracolabeler.bsky.social](https://bsky.app/profile/umbracolabeler.bsky.social) account and click on the **Subscribe to labeler** button. Now in your feed, all HQ and MVP accounts should now get a shiny new labels on their profiles and all of their posts to highglight their status.
 
 ## Claiming a label
 
