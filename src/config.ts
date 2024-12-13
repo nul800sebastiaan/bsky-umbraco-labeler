@@ -7,3 +7,4 @@ export const PORT = process.env.PORT ? Number(process.env.PORT) : 4100;
 export const METRICS_PORT = process.env.METRICS_PORT ? Number(process.env.METRICS_PORT) : 4101;
 export const BSKY_IDENTIFIER = process.env.BSKY_IDENTIFIER ?? '';
 export const BSKY_PASSWORD = process.env.BSKY_PASSWORD ?? '';
+export const GITHUB_PAT = process.env.GITHUB_PAT ?? '';
