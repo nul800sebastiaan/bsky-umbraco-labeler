@@ -14,7 +14,7 @@ export const startLabelerServer = (options: LabelerOptions, port: number = 4100,
     var labels = labelerServer.db
       .prepare<
         string[]
-      >(`SELECT * FROM labels as l1 WHERE l1.val = ? AND l1.id = (SELECT MAX(l2.id) FROM labels as l2 WHERE l1.src = l2.src AND l1.uri = l2.uri)`)
+      >(`SELECT l1.* FROM labels as l1 WHERE l1.val = ? AND l1.id = (SELECT MAX(l2.id) FROM labels as l2 WHERE l1.src = l2.src AND l1.uri = l2.uri)`)
       .all(label) as ComAtprotoLabelDefs.Label[];
 
     // Return labels excluding negated
@@ -35,10 +35,19 @@ export const startLabelerServer = (options: LabelerOptions, port: number = 4100,
       // Get current labels
       const labelAssignments = fetchLabelAssignments(label.identifier);
 
+      // console.log(labelAssignments.map(x => ({
+      //   id: x["id"],
+      //   uri: x.uri,
+      //   val: x.val,
+      //   neg: x.neg
+      // })))
+
       // Fetch the members JSON
       const members = await fetchGithubJson<Account[]>(
         `https://api.github.com/repos/mattbrailsford/bsky-umbraco-labeler/contents/data/${label.identifier}.json`,
       );
+
+      //console.log(members)
 
       // Add new members
       const newMembers = members.filter((x) => !labelAssignments.some((y) => y.uri === x.did));
