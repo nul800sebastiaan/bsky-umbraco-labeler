@@ -1,5 +1,9 @@
 [
   {
+    "did": "plc:wiz2tgxt3qvkl6ihuj5v4bzg",
+    "handle": "shazwazza.bsky.social"
+  },
+  {
     "did": "did:plc:z6wd53e2ycnfr2ctzipr27ab",
     "handle": "callumbwhyte.bsky.social"
   },
@@ -26,5 +30,9 @@
   {
     "did": "did:plc:elbssj2o7dkawwut3y3t2gt7",
     "handle": "owainjones.dev"
+  },
+  {
+    "did": "did:plc:i46llqdekf5kgugiizrar7jv",
+    "handle": "@deanleigh.bsky.social"
   }
 ]
