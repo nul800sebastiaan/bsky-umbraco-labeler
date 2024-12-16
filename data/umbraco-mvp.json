@@ -42,5 +42,9 @@
   {
     "did": "did:plc:5ir4dgdea6svdmnlx2jefvp7",
     "handle": "andyboot.bsky.social"
+  },
+  {
+    "did": "did:plc:z25jxd3cm75wwwffmjrsrr2y",
+    "handle": "hotchillicode.bsky.social"
   }
 ]
